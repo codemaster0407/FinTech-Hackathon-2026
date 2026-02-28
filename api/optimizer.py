@@ -97,11 +97,10 @@ class CardOptimizer:
             if category in self.preferences.point_priority:
                 rank = self.preferences.point_priority.index(category)
                 priority_bonus = (len(Sector) - rank) * 0.00001
-
+            
             if mode == "interest_only":
-                # In Interest Only mode, we keep benefit close to 0 but use rewards as a tiny tie-breaker
-                # This ensures Credit cards (0 loss) are still ranked above Debit (Interest loss)
-                final_benefit = rate * 0.000001
+                # Skip credit cards in interest_only mode to prioritize debit cards only.
+                continue
             else:
                 final_benefit = rate + priority_bonus
             
@@ -135,12 +134,22 @@ class CardOptimizer:
         # Sort all sources by benefit (highest first)
         ranked_cards = sorted(indexed_cards, key=lambda x: x["benefit"], reverse=True)
 
-        # Pre-calculate potential best single card that covers the whole amount
+        # Pre-calculate potential best single card that covers the whole amount,
+        # respecting mode-specific preferences.
         best_single_card = None
+        # First pass: prefer non‑credit cards in interest_only mode.
         for item in ranked_cards:
             if item["available_gbp"] >= amount:
+                if mode == "interest_only" and item["type"] == "credit":
+                    continue
                 best_single_card = item
                 break
+        # Second pass: if no suitable card found (e.g., only credit can cover), allow credit.
+        if best_single_card is None:
+            for item in ranked_cards:
+                if item["available_gbp"] >= amount:
+                    best_single_card = item
+                    break
 
         # Decision: To split or not to split?
         # We only consider splitting if the best single card is NOT the absolute best benefit card,
