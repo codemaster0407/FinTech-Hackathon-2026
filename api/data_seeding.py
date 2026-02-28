@@ -90,7 +90,7 @@ def seed_data():
             monthly_spend_limit=500000.0,
             current_balance=100000.0,
             markup_rate=0.06, 
-            gbp_conversion=122.5
+            gbp_conversion=122.5, 
         )
     ]
 
