@@ -1,0 +1,236 @@
+{
+    "description": "OptiFin dummy transaction scenarios covering all user flows",
+    "transactions": [
+        {
+            "id": "T001",
+            "flow": "Simple Domestic — Primary Debit (no optimisation)",
+            "description": "Morning coffee at Pret A Manger",
+            "amount": 4.50,
+            "currency": "GBP",
+            "category": "dining",
+            "merchant": "Pret A Manger",
+            "date": "2026-02-28",
+            "notes": "Small amount, no cashback threshold worth routing to credit card"
+        },
+        {
+            "id": "T002",
+            "flow": "Cashback Optimisation — Credit Card Preferred",
+            "description": "Weekly groceries at Sainsbury's",
+            "amount": 112.40,
+            "currency": "GBP",
+            "category": "groceries",
+            "merchant": "Sainsbury's",
+            "date": "2026-02-28",
+            "notes": "Amex earns 2% on groceries. Better EOM position than draining debit balance"
+        },
+        {
+            "id": "T003",
+            "flow": "FX Optimisation — Capital One (0% FX)",
+            "description": "Amazon US purchase",
+            "amount": 89.99,
+            "currency": "USD",
+            "category": "shopping",
+            "merchant": "Amazon US",
+            "date": "2026-02-28",
+            "notes": "Capital One has 0% FX fee. Santander would charge 3.99%"
+        },
+        {
+            "id": "T004",
+            "flow": "High-Value Travel — Cashback vs Cash Flow",
+            "description": "British Airways flights to Delhi",
+            "amount": 2840.00,
+            "currency": "GBP",
+            "category": "travel",
+            "merchant": "British Airways",
+            "date": "2026-02-28",
+            "notes": "Amex earns 2% travel cashback = £56.80. But credit limit headroom must be checked"
+        },
+        {
+            "id": "T005",
+            "flow": "Dining Out — Amex Preferred",
+            "description": "Dinner at Dishoom",
+            "amount": 68.50,
+            "currency": "GBP",
+            "category": "dining",
+            "merchant": "Dishoom",
+            "date": "2026-02-28",
+            "notes": "Amex 2% on dining > Lloyds 0.5% > debit opportunity cost"
+        },
+        {
+            "id": "T006",
+            "flow": "FX Hotel — EUR payment abroad",
+            "description": "Hotel in Barcelona",
+            "amount": 320.00,
+            "currency": "EUR",
+            "category": "travel",
+            "merchant": "Marriott Barcelona",
+            "date": "2026-02-28",
+            "notes": "Capital One 0% FX preferred. Wise EUR balance also viable."
+        },
+        {
+            "id": "T007",
+            "flow": "Large Electronics — Credit Limit Near Cap",
+            "description": "MacBook Pro from Apple Store",
+            "amount": 2199.00,
+            "currency": "GBP",
+            "category": "shopping",
+            "merchant": "Apple Store",
+            "date": "2026-02-28",
+            "notes": "Amex may be near utilization limit. Spread across Amex + Lloyds CC"
+        },
+        {
+            "id": "T008",
+            "flow": "Utility Top-Up — Bills Category",
+            "description": "British Gas prepay top-up",
+            "amount": 50.00,
+            "currency": "GBP",
+            "category": "bills",
+            "merchant": "British Gas",
+            "date": "2026-02-28",
+            "notes": "1% cashback on bills via Amex. Small benefit but still positive"
+        },
+        {
+            "id": "T009",
+            "flow": "Month-End Shortfall — Savings Transfer Needed",
+            "description": "Unexpected car repair",
+            "amount": 780.00,
+            "currency": "GBP",
+            "category": "other",
+            "merchant": "Kwik Fit",
+            "date": "2026-02-28",
+            "notes": "After DDs, Santander Current only has ~£1,666. Repair itself feasible from debit but tighten EOM position. Amex preferred to preserve cash."
+        },
+        {
+            "id": "T010",
+            "flow": "Emergency — Exceeds All UK Liquid Funds",
+            "description": "Emergency boiler replacement",
+            "amount": 5200.00,
+            "currency": "GBP",
+            "category": "other",
+            "merchant": "British Gas Energy",
+            "date": "2026-02-28",
+            "notes": "Exceeds UK current accounts. Must use savings + credit + potentially international"
+        },
+        {
+            "id": "T011",
+            "flow": "International Fallback — UK Cards Exhausted",
+            "description": "Venue booking deposit",
+            "amount": 3500.00,
+            "currency": "GBP",
+            "category": "other",
+            "merchant": "Grand Ballroom Ltd",
+            "date": "2026-02-28",
+            "notes": "Credit cards near limit + debit DDs leave little headroom. Wise USD balance used as backup."
+        },
+        {
+            "id": "T012",
+            "flow": "FX Shopping — Multiple Currency Options",
+            "description": "Saree purchase from Indian online store",
+            "amount": 8500.00,
+            "currency": "INR",
+            "category": "shopping",
+            "merchant": "FabIndia Online",
+            "date": "2026-02-28",
+            "notes": "Small INR amount. SBI India card may be cheapest. Or pay GBP with Capital One."
+        },
+        {
+            "id": "T013",
+            "flow": "Dining — Split Between Amex and Lloyds CC",
+            "description": "Team lunch (work reimbursable)",
+            "amount": 340.00,
+            "currency": "GBP",
+            "category": "dining",
+            "merchant": "Nobu London",
+            "date": "2026-02-28",
+            "notes": "Amex utilization near 30% target. Overflow to Lloyds CC."
+        },
+        {
+            "id": "T014",
+            "flow": "Transport — Regular Low Value",
+            "description": "Oyster card top-up",
+            "amount": 40.00,
+            "currency": "GBP",
+            "category": "travel",
+            "merchant": "TfL",
+            "date": "2026-02-28",
+            "notes": "Amex 2% travel cashback earns 80p. Worth routing."
+        },
+        {
+            "id": "T015",
+            "flow": "Healthcare — Specialist Category",
+            "description": "GP private consultation",
+            "amount": 150.00,
+            "currency": "GBP",
+            "category": "other",
+            "merchant": "Bupa Private Clinic",
+            "date": "2026-02-28",
+            "notes": "1% cashback on other via Amex. Modest but positive."
+        },
+        {
+            "id": "T016",
+            "flow": "Subscription Renewal — Annual Bill",
+            "description": "Adobe Creative Cloud annual renewal",
+            "amount": 659.88,
+            "currency": "GBP",
+            "category": "bills",
+            "merchant": "Adobe",
+            "date": "2026-02-28",
+            "notes": "Large bill. 1% Amex cashback = £6.60. Amex preferred over Santander debit."
+        },
+        {
+            "id": "T017",
+            "flow": "Weekend Away — Mixed FX Spend",
+            "description": "Paris weekend hotel + meals",
+            "amount": 450.00,
+            "currency": "EUR",
+            "category": "travel",
+            "merchant": "Various Paris",
+            "date": "2026-02-28",
+            "notes": "Capital One 0% FX. Amex FX fee 2.9% would cost £11.07 extra."
+        },
+        {
+            "id": "T018",
+            "flow": "Signup Bonus Chase — Large Grocery Run",
+            "description": "Costco bulk grocery shop",
+            "amount": 280.00,
+            "currency": "GBP",
+            "category": "groceries",
+            "merchant": "Costco",
+            "date": "2026-02-28",
+            "notes": "Amex signup bonus needs £900 more spend in 45 days. This contributes £280. Double incentive."
+        },
+        {
+            "id": "T019",
+            "flow": "Family Remittance — International Transfer",
+            "description": "Monthly transfer to family in India",
+            "amount": 200.00,
+            "currency": "GBP",
+            "category": "other",
+            "merchant": "Family Remittance",
+            "date": "2026-02-28",
+            "notes": "Use Wise USD or GBP balance for cheapest FX. Not a point-of-sale transaction."
+        },
+        {
+            "id": "T020",
+            "flow": "Contactless — Ultra Small Value",
+            "description": "Newspaper at WH Smith",
+            "amount": 1.80,
+            "currency": "GBP",
+            "category": "shopping",
+            "merchant": "WH Smith",
+            "date": "2026-02-28",
+            "notes": "Cashback on small amounts is negligible (1.8p). Primary debit is simplest."
+        }
+    ],
+    "monthly_summary_baseline": {
+        "total_income": 4500.00,
+        "fixed_auto_debits": {
+            "santander_current": 2153.49,
+            "amex_gold": 58.98,
+            "capital_one": 26.98,
+            "lloyds_cc": 2.99
+        },
+        "discretionary_spend_estimate": 1200.00,
+        "start_of_month_total_debit_balance": 17761.65
+    }
+}

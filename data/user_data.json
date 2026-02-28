@@ -1,0 +1,229 @@
+{
+  "user": {
+    "id": "usr_priya_001",
+    "name": "Priya Sharma",
+    "primary_debit_id": "santander_current",
+    "monthly_income": 4500.0,
+    "income_day_of_month": 25,
+    "preferences": {
+      "max_credit_utilization": 0.3,
+      "always_pay_credit_in_full": true,
+      "auto_approve_savings_transfer_under": 1000.0,
+      "optimization_goal": "maximize_eom_cash"
+    }
+  },
+  "debit_accounts": [
+    {
+      "id": "santander_current",
+      "name": "Santander Current",
+      "type": "debit",
+      "is_primary": true,
+      "currency": "GBP",
+      "balance": 3820.15,
+      "savings_interest_rate_annual": 0.015,
+      "auto_debits": [
+        {
+          "name": "Council Tax DD",
+          "amount": 189.0,
+          "day_of_month": 1
+        },
+        {
+          "name": "Rent Payment",
+          "amount": 1850.0,
+          "day_of_month": 2
+        },
+        {
+          "name": "Electricity DD",
+          "amount": 74.5,
+          "day_of_month": 7
+        },
+        {
+          "name": "Broadband DD",
+          "amount": 39.99,
+          "day_of_month": 14
+        }
+      ]
+    },
+    {
+      "id": "monzo_current",
+      "name": "Monzo Current",
+      "type": "debit",
+      "is_primary": false,
+      "currency": "GBP",
+      "balance": 1240.5,
+      "savings_interest_rate_annual": 0.0,
+      "auto_debits": []
+    },
+    {
+      "id": "santander_saver",
+      "name": "Santander Saver",
+      "type": "savings",
+      "is_primary": false,
+      "currency": "GBP",
+      "balance": 4200.0,
+      "savings_interest_rate_annual": 0.045,
+      "auto_debits": []
+    },
+    {
+      "id": "lloyds_isa",
+      "name": "Lloyds Cash ISA",
+      "type": "savings",
+      "is_primary": false,
+      "currency": "GBP",
+      "balance": 8500.0,
+      "savings_interest_rate_annual": 0.04,
+      "auto_debits": []
+    }
+  ],
+  "credit_cards": [
+    {
+      "id": "amex_gold",
+      "name": "Amex Gold",
+      "network": "Amex",
+      "currency": "GBP",
+      "credit_limit": 8000.0,
+      "current_balance": 2400.0,
+      "apr_annual": 0.249,
+      "annual_fee": 160.0,
+      "statement_close_day": 15,
+      "payment_due_day": 8,
+      "grace_period_days": 56,
+      "cashback_rates": {
+        "groceries": 0.02,
+        "dining": 0.02,
+        "travel": 0.02,
+        "shopping": 0.01,
+        "bills": 0.01,
+        "other": 0.01
+      },
+      "signup_bonus": {
+        "target_spend": 3000,
+        "current_spend": 2100,
+        "bonus_value": 200,
+        "deadline_days": 45
+      },
+      "auto_debits": [
+        {
+          "name": "Amazon Prime",
+          "amount": 8.99,
+          "day_of_month": 3
+        },
+        {
+          "name": "Gym",
+          "amount": 49.99,
+          "day_of_month": 10
+        }
+      ]
+    },
+    {
+      "id": "capital_one",
+      "name": "Capital One",
+      "network": "Visa",
+      "currency": "GBP",
+      "credit_limit": 5000.0,
+      "current_balance": 800.0,
+      "apr_annual": 0.194,
+      "annual_fee": 0.0,
+      "statement_close_day": 20,
+      "payment_due_day": 12,
+      "grace_period_days": 25,
+      "cashback_rates": {
+        "groceries": 0.005,
+        "dining": 0.005,
+        "travel": 0.01,
+        "shopping": 0.005,
+        "bills": 0.005,
+        "other": 0.005
+      },
+      "signup_bonus": null,
+      "auto_debits": [
+        {
+          "name": "Netflix",
+          "amount": 15.99,
+          "day_of_month": 5
+        },
+        {
+          "name": "Spotify",
+          "amount": 10.99,
+          "day_of_month": 18
+        }
+      ]
+    },
+    {
+      "id": "lloyds_cc",
+      "name": "Lloyds Cashback Card",
+      "network": "Mastercard",
+      "currency": "GBP",
+      "credit_limit": 3500.0,
+      "current_balance": 150.0,
+      "apr_annual": 0.199,
+      "annual_fee": 24.0,
+      "statement_close_day": 25,
+      "payment_due_day": 18,
+      "grace_period_days": 25,
+      "cashback_rates": {
+        "groceries": 0.005,
+        "dining": 0.005,
+        "travel": 0.005,
+        "shopping": 0.005,
+        "bills": 0.005,
+        "other": 0.005
+      },
+      "signup_bonus": null,
+      "auto_debits": [
+        {
+          "name": "iCloud",
+          "amount": 2.99,
+          "day_of_month": 22
+        }
+      ]
+    }
+  ],
+  "backup_international_cards": [
+    {
+      "id": "sbi_india_debit",
+      "name": "SBI India Debit",
+      "type": "international_debit",
+      "country": "IN",
+      "currency": "INR",
+      "balance_local": 185000,
+      "fx_rate_to_gbp": 0.00951,
+      "balance_gbp_approx": 1759.35,
+      "transfer_fee_flat": 3.5,
+      "fx_spread_rate": 0.025,
+      "min_transfer_amount_gbp": 10.0,
+      "estimated_transfer_hours": 2,
+      "notes": "Use only if UK funds exhausted. 2.5% FX spread + \u00a33.50 flat fee per transfer."
+    },
+    {
+      "id": "hdfc_india_debit",
+      "name": "HDFC India Debit",
+      "type": "international_debit",
+      "country": "IN",
+      "currency": "INR",
+      "balance_local": 92000,
+      "fx_rate_to_gbp": 0.00951,
+      "balance_gbp_approx": 874.92,
+      "transfer_fee_flat": 5.0,
+      "fx_spread_rate": 0.03,
+      "min_transfer_amount_gbp": 10.0,
+      "estimated_transfer_hours": 4,
+      "notes": "Higher FX spread than SBI. Use as absolute last resort."
+    },
+    {
+      "id": "wise_usd",
+      "name": "Wise USD Balance",
+      "type": "multi_currency_wallet",
+      "country": "INTL",
+      "currency": "USD",
+      "balance_local": 1850.0,
+      "fx_rate_to_gbp": 0.7912,
+      "balance_gbp_approx": 1463.72,
+      "transfer_fee_flat": 0.0,
+      "fx_spread_rate": 0.0043,
+      "min_transfer_amount_gbp": 1.0,
+      "estimated_transfer_hours": 0,
+      "notes": "Wise mid-market rate. Best international option. Near-instant."
+    }
+  ]
+}
