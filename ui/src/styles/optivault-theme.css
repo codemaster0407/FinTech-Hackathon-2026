@@ -1,0 +1,235 @@
+/* OptiVault Custom Theme - Premium Light Mode Fintech */
+
+:root {
+  /* OptiVault Brand Colors */
+  --optivault-blue: #0080FF;
+  --optivault-blue-dim: rgba(0, 128, 255, 0.09);
+  --optivault-blue-mid: rgba(0, 128, 255, 0.25);
+  --optivault-teal: #00D4AA;
+  --optivault-teal-dim: rgba(0, 212, 170, 0.09);
+  --optivault-navy: #F8FAFC;
+  --optivault-amber: #F59E0B;
+  --optivault-amber-dim: rgba(245, 158, 11, 0.08);
+  --optivault-cyan: #06B6D4;
+  --optivault-cyan-dim: rgba(6, 182, 212, 0.08);
+
+  /* Legacy aliases for backward compatibility */
+  --optivault-emerald: #0080FF;
+  --optivault-emerald-dim: rgba(0, 128, 255, 0.09);
+  --optivault-emerald-mid: rgba(0, 128, 255, 0.25);
+  --optivault-navy: #F8FAFC;
+  --optivault-amber: #F59E0B;
+  --optivault-amber-dim: rgba(245, 158, 11, 0.08);
+  --optivault-cyan: #06B6D4;
+  --optivault-cyan-dim: rgba(6, 182, 212, 0.08);
+
+  /* Background Layers */
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-alt: #F1F5F9;
+  --bg-elevated: #E2E8F0;
+
+  /* Borders */
+  --border-default: #E2E8F0;
+  --border-light: #CBD5E1;
+
+  /* Text */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+
+  /* Status Colors */
+  --status-amber: #F59E0B;
+  --status-amber-dim: rgba(245, 158, 11, 0.08);
+  --status-red: #EF4444;
+  --status-red-dim: rgba(239, 68, 68, 0.07);
+  --status-blue: #0080FF;
+  --status-blue-dim: rgba(0, 128, 255, 0.08);
+
+  /* Accent Colors */
+  --accent-purple: #A78BFA;
+  --accent-teal: #00D4AA;
+
+  /* Bank Brand Colors */
+  --bank-monzo: #FF5A5F;
+  --bank-santander: #EC0000;
+  --bank-lloyds: #006A4D;
+  --bank-barclays: #00AEEF;
+  --bank-hsbc: #DB0011;
+  --bank-natwest: #42145F;
+  --bank-amex: #006FCF;
+  --bank-capital-one: #D03027;
+  --bank-sbi: #1C4587;
+  --bank-hdfc: #004C8F;
+
+  /* Radius Tokens */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-[#F8FAFC] text-[#0F172A] antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern' 1;
+    font-kerning: normal;
+  }
+
+  /* Monospace for financial figures */
+  .mono {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+
+  /* OptiVault Brand Utilities */
+  .bg-optivault-emerald {
+    background-color: var(--optivault-emerald);
+  }
+
+  .bg-optivault-emerald-dim {
+    background-color: var(--optivault-emerald-dim);
+  }
+
+  .bg-optivault-navy {
+    background-color: var(--optivault-navy);
+  }
+
+  .bg-optivault-amber {
+    background-color: var(--optivault-amber);
+  }
+
+  .bg-optivault-amber-dim {
+    background-color: var(--optivault-amber-dim);
+  }
+
+  .bg-optivault-blue {
+    background-color: var(--optivault-blue);
+  }
+
+  .bg-optivault-blue-dim {
+    background-color: var(--optivault-blue-dim);
+  }
+
+  .bg-optivault-cyan {
+    background-color: var(--optivault-cyan);
+  }
+
+  .bg-optivault-cyan-dim {
+    background-color: var(--optivault-cyan-dim);
+  }
+
+  .bg-surface {
+    background-color: var(--bg-surface);
+  }
+
+  .bg-surface-alt {
+    background-color: var(--bg-surface-alt);
+  }
+
+  .bg-elevated {
+    background-color: var(--bg-elevated);
+  }
+
+  .text-optivault-emerald {
+    color: var(--optivault-emerald);
+  }
+
+  .text-optivault-blue {
+    color: var(--optivault-blue);
+  }
+
+  .text-optivault-amber {
+    color: var(--optivault-amber);
+  }
+
+  .text-optivault-cyan {
+    color: var(--optivault-cyan);
+  }
+
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-muted {
+    color: var(--text-muted);
+  }
+
+  .text-primary {
+    color: var(--text-primary);
+  }
+
+  .border-optivault {
+    border-color: var(--border-default);
+  }
+
+  .border-optivault-light {
+    border-color: var(--border-light);
+  }
+
+  .border-optivault-emerald {
+    border-color: var(--optivault-emerald);
+  }
+
+  /* Mobile Container */
+  .mobile-container {
+    max-width: 430px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+  }
+
+  /* Premium Card Gradient */
+  .premium-gradient {
+    background: linear-gradient(135deg, #0080FF 0%, #0052CC 100%);
+  }
+
+  .card-gradient {
+    background: linear-gradient(135deg, #00D4AA 0%, #0080FF 50%, #0052CC 100%);
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      max-height: 0;
+    }
+
+    to {
+      opacity: 1;
+      max-height: 1000px;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
+  }
+}

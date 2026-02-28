@@ -1,0 +1,40 @@
+/* Light Theme Global Overrides */
+
+@layer utilities {
+  /* Override hardcoded text-white to use semantic color */
+  .text-white {
+    color: var(--text-primary) !important;
+  }
+  
+  /* Keep white text ONLY on colored backgrounds (not white/light backgrounds) */
+  .bg-optivault-emerald,
+  .bg-optivault-emerald *,
+  button.bg-optivault-emerald,
+  button.bg-optivault-emerald *,
+  a.bg-optivault-emerald,
+  a.bg-optivault-emerald *,
+  [class*="bg-[#0080FF]"],
+  [class*="bg-[#0080FF]"] *,
+  [class*="bg-[#00D"],
+  [class*="bg-[#00D"] *,
+  [class*="bg-[#EF4444]"],
+  [class*="bg-[#EF4444]"] *,
+  [class*="bg-[#DC2626]"],
+  [class*="bg-[#DC2626]"] *,
+  .card-gradient,
+  .card-gradient *,
+  .premium-gradient,
+  .premium-gradient * {
+    color: #FFFFFF !important;
+  }
+  
+  /* Fix borders that rely on white */
+  .border-white {
+    border-color: var(--border-default) !important;
+  }
+  
+  /* Hover states for light backgrounds */
+  .hover\:bg-white\/10:hover {
+    background-color: var(--bg-surface-alt) !important;
+  }
+}
