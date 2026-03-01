@@ -122,7 +122,7 @@ export default function Home() {
 
           <div className="relative z-10">
             <p className="text-[10px] uppercase tracking-widest text-muted mb-1">TOTAL BALANCE</p>
-            <h2 className="text-[40px] font-bold text-white mono leading-tight mb-2">£18,441</h2>
+            <h2 className="text-[40px] font-bold text-white mono leading-tight mb-2">£5,070.00</h2>
             <p className="text-xs text-secondary mb-4">Across 5 accounts</p>
           </div>
         </div>

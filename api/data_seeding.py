@@ -6,32 +6,32 @@ def seed_data():
             id="dc_1",
             name="Santander Current Account",
             type=CardType.DEBIT,
-            monthly_spend_limit=1500,
-            current_balance=3820.0,
+            monthly_spend_limit=1800,
+            current_balance=1800.0,
             annual_interest_rate=0.05
         ),
         DebitCard(
             id="dc_2",
             name="Monzo Current Account",
             type=CardType.DEBIT,
-            monthly_spend_limit=300.0,
-            current_balance=1521.0,
+            monthly_spend_limit=150.0,
+            current_balance=200.0,
             annual_interest_rate=0.02
         ),
         DebitCard(
             id="dc_3",
             name="Lloyds Saver Account",
             type=CardType.DEBIT,
-            monthly_spend_limit=500.0,
-            current_balance=4480.0,
+            monthly_spend_limit=100.0,
+            current_balance=60.0,
             annual_interest_rate=0.035
         ), 
         DebitCard(
             id="dc_4",
             name="Barclays ISA Account",
             type=CardType.DEBIT,
-            monthly_spend_limit=1000.0,
-            current_balance=6420.0,
+            monthly_spend_limit=100.0,
+            current_balance=10.0,
             annual_interest_rate=0.035
         )
     ]
@@ -41,8 +41,8 @@ def seed_data():
             id="cc_1",
             name="Amex Gold Card",
             type=CardType.CREDIT,
-            monthly_spend_limit=1000.0,
-            current_balance=3400.0,
+            monthly_spend_limit=1500.0,
+            current_balance=2000.0,
             cashback_rates={
                 Sector.TRAVEL: 0.05,
                 Sector.HOTEL: 0.03,
@@ -55,8 +55,8 @@ def seed_data():
             id="cc_2",
             name="Chase UK Credit",
             type=CardType.CREDIT,
-            monthly_spend_limit=1800.0,
-            current_balance=3000.0,
+            monthly_spend_limit=500.0,
+            current_balance=500.0,
             cashback_rates={
                 Sector.SHOPPING: 0.04,
                 Sector.HOTEL: 0.02,
@@ -69,8 +69,8 @@ def seed_data():
             id="cc_3",
             name="Capital One Credit",
             type=CardType.CREDIT,
-            monthly_spend_limit=1500.0,
-            current_balance=3000.0,
+            monthly_spend_limit=500.0,
+            current_balance=500.0,
             cashback_rates={
                 Sector.SHOPPING: 0.15,
                 Sector.HOTEL: 0.08,

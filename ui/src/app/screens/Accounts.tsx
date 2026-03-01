@@ -39,15 +39,15 @@ export default function Accounts() {
   const navigate = useNavigate();
   const accounts = {
     uk: [
-      { bank: "Santander", type: "Savings", balance: "£3,820.16", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
-      { bank: "Monzo", type: "Savings", balance: "£1,521.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#FF5A5F", logo: "M" },
-      { bank: "Lloyds", type: "Savings", balance: "£4,480.00", vrp: false, badge: "VRP OFF", synced: "5m ago", color: "#006A4D", logo: "L" },
-      { bank: "Barclays", type: "Savings", balance: "£6,420.00", vrp: false, badge: "ISA · VRP OFF", synced: "5m ago", color: "#00AEEF", logo: "B" }
+      { bank: "Santander", type: "Savings", balance: "£1,800.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
+      { bank: "Monzo", type: "Savings", balance: "200.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#FF5A5F", logo: "M" },
+      { bank: "Lloyds", type: "Savings", balance: "£60.00", vrp: false, badge: "VRP OFF", synced: "5m ago", color: "#006A4D", logo: "L" },
+      { bank: "Barclays", type: "Savings", balance: "£10.00", vrp: false, badge: "ISA · VRP OFF", synced: "5m ago", color: "#00AEEF", logo: "B" }
     ],
     creditCards: [
-      { bank: "Amex Gold", type: "Credit", balance: "£3,400 available", linked: true, utilisation: 15, cashback: "4.4% cashback", color: "#002663", logo: "A" },
-      { bank: "Chase UK", type: "Credit", balance: "£4,500 available", linked: true, utilisation: 5, cashback: "1% cashback", color: "#117ACA", logo: "C" },
-      { bank: "Capital One", type: "Credit", balance: "£1,500 available", linked: true, utilisation: 0, fx: "0% FX", color: "#003A6C", logo: "C" }
+      { bank: "Amex Gold", type: "Credit", balance: "£2,000 available", linked: true, utilisation: 15, cashback: "4.4% cashback", color: "#002663", logo: "A" },
+      { bank: "Chase UK", type: "Credit", balance: "£500 available", linked: true, utilisation: 5, cashback: "1% cashback", color: "#117ACA", logo: "C" },
+      { bank: "Capital One", type: "Credit", balance: "£500 available", linked: true, utilisation: 0, fx: "0% FX", color: "#003A6C", logo: "C" }
     ],
     international: [
       { icon: Globe, bank: "State Bank of India", type: "Savings", balance: "₹1,85,000", badge: "Account Aggregator ✓", synced: "2m ago" },
