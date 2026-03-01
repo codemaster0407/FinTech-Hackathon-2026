@@ -67,6 +67,7 @@ interface OptimizationResult {
     reward_points_earned: number;
     reward_type: string;
     interest_opportunity_lost: number;
+    interest_saved_benefit?: number;
     fx_cost: number;
     net_benefit: number;
     pending_auto_debits_reserved: number;
@@ -75,6 +76,7 @@ interface OptimizationResult {
   eom_impact: {
     total_cashback_earned: number;
     total_interest_opportunity_lost: number;
+    total_interest_saved: number;
     total_fx_costs: number;
     net_eom_benefit: number;
   };
@@ -277,6 +279,7 @@ export default function Simulator() {
         eom_impact: {
           total_cashback_earned: (amountNum * 0.45 * 0.01) + (amountNum * 0.36 * 0.015),
           total_interest_opportunity_lost: ((amountNum * 0.075) * (0.01 / 365) * 30) + ((amountNum * 0.035) * (0.02 / 365) * 30),
+          total_interest_saved: 0,
           total_fx_costs: isInternational ? amountNum * 0.08 * 0.01 : 0,
           net_eom_benefit: ((amountNum * 0.45 * 0.01) + (amountNum * 0.36 * 0.015)) - (((amountNum * 0.075) * (0.01 / 365) * 30) + ((amountNum * 0.035) * (0.02 / 365) * 30)) - (isInternational ? amountNum * 0.08 * 0.01 : 0)
         },
@@ -545,7 +548,9 @@ export default function Simulator() {
                 // Convert to `interest_opportunity_lost` positive value for the UI when appropriate
                 if (a.interest_opportunity_lost == null) {
                   const raw = a.interest_saved ?? 0;
+                  // If positive, it's saved. If negative, it's lost.
                   a.interest_opportunity_lost = raw < 0 ? Math.abs(raw) : 0;
+                  a.interest_saved_benefit = raw > 0 ? raw : 0;
                 }
 
                 a.fx_cost = a.fx_cost ?? 0;
@@ -557,12 +562,14 @@ export default function Simulator() {
               // Compute aggregated eom_impact from allocations unless backend supplied one
               const total_cashback = allocs.reduce((s: number, a: any) => s + (a.cashback_earned || 0), 0);
               const total_interest_loss = allocs.reduce((s: number, a: any) => s + (a.interest_opportunity_lost || 0), 0);
+              const total_interest_saved = allocs.reduce((s: number, a: any) => s + (a.interest_saved_benefit || 0), 0);
               const total_fx = allocs.reduce((s: number, a: any) => s + (a.fx_cost || 0), 0);
               const computedEom = {
                 total_cashback_earned: total_cashback,
                 total_interest_opportunity_lost: total_interest_loss,
+                total_interest_saved: total_interest_saved,
                 total_fx_costs: total_fx,
-                net_eom_benefit: total_cashback - total_interest_loss - total_fx,
+                net_eom_benefit: total_cashback + total_interest_saved - total_interest_loss - total_fx,
               };
 
               const eom = existingEom ?? computedEom;
@@ -635,8 +642,10 @@ export default function Simulator() {
 
               <div className="space-y-3 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-secondary">Interest Opportunity Lost</span>
-                  <span className="text-sm font-semibold text-status-red">-£{Math.abs(result.eom_impact.total_interest_opportunity_lost).toFixed(2)}</span>
+                  <span className="text-xs text-secondary">{result.eom_impact.total_interest_saved > 0 ? "Net Savings" : "Net Loss"}</span>
+                  <span className={`text-sm font-semibold ${result.eom_impact.total_interest_saved > 0 ? "text-optivault-emerald" : "text-status-red"}`}>
+                    {result.eom_impact.total_interest_saved > 0 ? "+" : "-"}£{Math.abs(result.eom_impact.total_interest_saved || result.eom_impact.total_interest_opportunity_lost).toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-secondary">FX Costs</span>

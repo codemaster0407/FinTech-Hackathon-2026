@@ -23,6 +23,7 @@ class CardOptimizer:
         # Construct a detailed prompt for Groq
         prompt = f'''Based on the allocations made by the optimization model, give the user the summary 
         of the payment allocations and make it user-friendly for a common man.
+        Use the term 'Net Savings' when referring to interest preserved in savings accounts.
         {str(allocations)}. Maximise the explanation to only 3 sentences
         '''
         print(allocations)
@@ -75,6 +76,10 @@ class CardOptimizer:
             [dc.annual_interest_rate for dc in self.debit_cards] + [0])
 
         for cc in self.credit_cards:
+            if mode == "interest_only":
+                # Only utilise debit cards in interest_only/general mode.
+                continue
+
             rate = cc.cashback_rates.get(category, 0)
 
             # Calculate a tiny priority bonus (0 to 0.0001) based on sector priority
@@ -83,11 +88,7 @@ class CardOptimizer:
                 rank = self.preferences.point_priority.index(category)
                 priority_bonus = (len(Sector) - rank) * 0.00001
 
-            if mode == "interest_only":
-                # Skip credit cards in interest_only mode to prioritize debit cards only.
-                continue
-            else:
-                final_benefit = rate + priority_bonus
+            final_benefit = rate + priority_bonus
 
             indexed_cards.append({
                 "obj": cc,
@@ -105,6 +106,10 @@ class CardOptimizer:
             })
 
         for ic in self.international_cards:
+            if mode == "interest_only":
+                # Only utilise debit cards in interest_only/general mode.
+                continue
+
             # International balance/limit is in local currency (e.g. INR)
             # Convert to GBP equivalent for optimization logic
             available_gbp = min(ic.monthly_spend_limit,
@@ -124,19 +129,10 @@ class CardOptimizer:
         # Pre-calculate potential best single card that covers the whole amount,
         # respecting mode-specific preferences.
         best_single_card = None
-        # First pass: prefer non‑credit cards in interest_only mode.
         for item in ranked_cards:
             if item["available_gbp"] >= amount:
-                if mode == "interest_only" and item["type"] == "credit":
-                    continue
                 best_single_card = item
                 break
-        # Second pass: if no suitable card found (e.g., only credit can cover), allow credit.
-        if best_single_card is None:
-            for item in ranked_cards:
-                if item["available_gbp"] >= amount:
-                    best_single_card = item
-                    break
 
         # Decision: To split or not to split?
         # We only consider splitting if the best single card is NOT the absolute best benefit card,
@@ -150,27 +146,31 @@ class CardOptimizer:
             # Fallback to single best card
             card = best_single_card["obj"]
             cashback = 0.0
-            interest_saved = 0.0
+            # Logic for positive interest_saved:
+            # How much better is this card than the highest interest debit account?
             if best_single_card["type"] == "credit":
                 rate = card.cashback_rates.get(category, 0)
                 cashback = self._calculate_cashback_benefit(amount, rate)
-                # Show the interest preserved in the bank by not spending this amount from high-yield debit
                 interest_saved = self._calculate_interest_benefit(
                     amount, best_debit_rate)
             elif best_single_card["type"] == "debit":
-                interest_saved = - \
-                    self._calculate_interest_benefit(
-                        amount, card.annual_interest_rate)
+                # If we use a 2% account instead of 5%, we "save" 3%.
+                # If we use the 5% account, we save 0%.
+                rel_rate = best_debit_rate - card.annual_interest_rate
+                interest_saved = self._calculate_interest_benefit(
+                    amount, rel_rate)
             else:
-                interest_saved = - \
-                    self._calculate_interest_benefit(amount, card.markup_rate)
+                # International: compare markup vs best debit rate for opportunity cost?
+                # Actually, the user's focus is on interest saved from splitting.
+                rel_rate = best_debit_rate - card.markup_rate
+                interest_saved = self._calculate_interest_benefit(amount, rel_rate)
 
             allocations.append(Allocation(
                 card_id=card.id,
                 card_name=card.name,
                 amount_utilised=amount,
                 interest_saved=interest_saved,
-                cashback_points=cashback,
+                cashback_points= cashback + interest_saved,
                 cashback_sector=category if best_single_card["type"] == "credit" else None
             ))
             remaining_amount = 0
@@ -187,30 +187,27 @@ class CardOptimizer:
                     use_amount = min(remaining_amount, available)
 
                     cashback = 0.0
-                    interest_saved = 0.0
-
                     if item["type"] == "credit":
                         rate = card.cashback_rates.get(category, 0)
                         cashback = self._calculate_cashback_benefit(
                             use_amount, rate)
-                        # Show the interest preserved in the bank
                         interest_saved = self._calculate_interest_benefit(
                             use_amount, best_debit_rate)
                     elif item["type"] == "debit":
-                        interest_saved = - \
-                            self._calculate_interest_benefit(
-                                use_amount, card.annual_interest_rate)
+                        rel_rate = best_debit_rate - card.annual_interest_rate
+                        interest_saved = self._calculate_interest_benefit(
+                            use_amount, rel_rate)
                     else:  # international
-                        interest_saved = - \
-                            self._calculate_interest_benefit(
-                                use_amount, card.markup_rate)
+                        rel_rate = best_debit_rate - card.markup_rate
+                        interest_saved = self._calculate_interest_benefit(
+                            use_amount, rel_rate)
 
                     allocations.append(Allocation(
                         card_id=card.id,
                         card_name=card.name,
                         amount_utilised=use_amount,
                         interest_saved=interest_saved,
-                        cashback_points=cashback,
+                        cashback_points=cashback + interest_saved,
                         cashback_sector=category if item["type"] == "credit" else None
                     ))
                     remaining_amount -= use_amount
