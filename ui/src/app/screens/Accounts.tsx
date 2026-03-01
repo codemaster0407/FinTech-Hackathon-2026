@@ -39,10 +39,10 @@ export default function Accounts() {
   const navigate = useNavigate();
   const accounts = {
     uk: [
-      { bank: "Santander", type: "Savings", balance: "£1,800.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
-      { bank: "Monzo", type: "Savings", balance: "200.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#FF5A5F", logo: "M" },
-      { bank: "Lloyds", type: "Savings", balance: "£60.00", vrp: false, badge: "VRP OFF", synced: "5m ago", color: "#006A4D", logo: "L" },
-      { bank: "Barclays", type: "Savings", balance: "£10.00", vrp: false, badge: "ISA · VRP OFF", synced: "5m ago", color: "#00AEEF", logo: "B" }
+      { bank: "Santander", type: "Savings", balance: "£1,800.00", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
+      { bank: "Monzo", type: "Savings", balance: "200.00", synced: "2m ago", color: "#FF5A5F", logo: "M" },
+      { bank: "Lloyds", type: "Savings", balance: "£60.00", synced: "5m ago", color: "#006A4D", logo: "L" },
+      { bank: "Barclays", type: "Savings", balance: "£10.00", synced: "5m ago", color: "#00AEEF", logo: "B" }
     ],
     creditCards: [
       { bank: "Amex Gold", type: "Credit", balance: "£2,000 available", linked: true, utilisation: 15, cashback: "4.4% cashback", color: "#002663", logo: "A" },
@@ -88,9 +88,7 @@ export default function Accounts() {
                   </div>
                   <p className="text-xs text-secondary mb-2">{account.type}</p>
                   <p className="text-base font-mono text-white mb-2">{account.balance}</p>
-                  {account.vrp && (
-                    <p className="text-xs text-optivault-emerald">VRP: {account.vrp}</p>
-                  )}
+
                   <p className="text-[10px] text-muted mt-1">Synced {account.synced}</p>
                 </div>
 
