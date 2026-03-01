@@ -13,7 +13,6 @@ const SetPreferences = lazy(() => import("./screens/SetPreferences"));
 const Home = lazy(() => import("./screens/Home"));
 const Accounts = lazy(() => import("./screens/Accounts"));
 const TransactionDetail = lazy(() => import("./screens/TransactionDetail"));
-const VirtualCard = lazy(() => import("./screens/VirtualCard"));
 const Insights = lazy(() => import("./screens/Insights"));
 const PaymentOptions = lazy(() => import("./screens/PaymentOptions"));
 const Simulator = lazy(() => import("./screens/Simulator"));
@@ -67,10 +66,7 @@ export const router = createBrowserRouter([
     path: "/transaction/:id",
     Component: TransactionDetail,
   },
-  {
-    path: "/card",
-    Component: VirtualCard,
-  },
+  // Card route removed
   {
     path: "/insights",
     Component: Insights,

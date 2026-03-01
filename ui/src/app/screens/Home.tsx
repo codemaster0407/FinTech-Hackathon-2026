@@ -1,13 +1,15 @@
 import { Link, useNavigate } from "react-router";
+import { virtualCard } from "../data/mockData";
+import VirtualCardDisplay from "../components/VirtualCardDisplay";
 import { Bell, Settings, Plus, TrendingUp, ArrowUpRight, Zap, Plane, ShoppingCart, ShoppingBag, Home as HomeIconLucide, Smartphone, Snowflake, CreditCard, BarChart3, User, ChevronRight } from "lucide-react";
 
 function BottomNav({ active }: { active: string }) {
   const tabs = [
     { id: "home", label: "Home", icon: HomeIconLucide, path: "/home" },
-    { id: "card", label: "Card", icon: CreditCard, path: "/card" },
+    // Card tab removed
     { id: "simulator", label: "Simulator", icon: Zap, path: "/simulator" },
     { id: "insights", label: "Insights", icon: BarChart3, path: "/insights" },
-    { id: "account", label: "Account", icon: User, path: "/accounts" }
+    { id: "cards", label: "Cards", icon: CreditCard, path: "/accounts" }
   ];
 
   return (
@@ -143,12 +145,11 @@ export default function Home() {
             </div>
 
             <div className="relative z-10">
-              <p className="text-[11px] text-white/90 tracking-wide">AMANDA</p>
+              <p className="text-[11px] text-white/90 tracking-wide">{virtualCard.cardholderName}</p>
               <div className="flex items-center justify-between mt-1">
-                <p className="text-lg font-mono text-white tracking-[0.15em]">**** <span className="text-white/50">****</span> <span className="text-white/50">****</span> 9421</p>
-                <div className="flex -space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-red-500/80 mix-blend-multiply" />
-                  <div className="w-6 h-6 rounded-full bg-yellow-500/80 mix-blend-multiply" />
+                <p className="text-lg font-mono text-white tracking-[0.15em]">{virtualCard.cardNumber}</p>
+                <div className="flex items-center gap-2">
+                  <div className="px-2 py-1 rounded bg-white/10 text-white text-sm font-bold">VISA</div>
                 </div>
               </div>
             </div>
@@ -221,57 +222,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Upcoming Payments */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3">Next 28 Hours</h3>
-          <div className="bg-surface border border-optivault rounded-xl p-4">
-            <div className="space-y-2 mb-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-secondary">Council Tax DD · Tomorrow 06:00</span>
-                <span className="text-white font-mono">£189</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-secondary">Gym DD · Tomorrow 09:00</span>
-                <span className="text-white font-mono">£39.99</span>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-optivault">
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-4 h-4 rounded-full bg-optivault-emerald/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-optivault-emerald text-[10px]">✓</span>
-                </div>
-                <p className="text-secondary">After DDs: Santander will have <span className="text-white font-mono">£3,591.16</span></p>
-              </div>
-              <p className="text-[10px] text-optivault-emerald mt-1 ml-6">No overdraft risk detected</p>
-            </div>
-          </div>
-        </div>
-
-        {/* VRP Usage */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3">VRP Transfers This Month</h3>
-          <div className="bg-surface border border-optivault rounded-xl p-4 space-y-3">
-            {[
-              { name: "Monzo", used: 0, total: 2000 },
-              { name: "Santander Saver", used: 780, total: 3000 },
-              { name: "Lloyds", used: 0, total: 1000 }
-            ].map((account, idx) => (
-              <div key={idx}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-secondary">{account.name}</span>
-                  <span className="text-xs text-white font-mono">£{account.used} of £{account.total.toLocaleString()}</span>
-                </div>
-                <div className="h-1 bg-surface-alt rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-optivault-emerald transition-all"
-                    style={{ width: `${(account.used / account.total) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* (Upcoming Payments and VRP Usage removed) */}
       </div>
 
       <BottomNav active="home" />

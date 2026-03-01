@@ -178,7 +178,7 @@ export default function Accounts() {
       </button>
 
       {/* Bottom Navigation */}
-      <BottomNav active="account" />
+      <BottomNav active="cards" />
     </div>
   );
 }

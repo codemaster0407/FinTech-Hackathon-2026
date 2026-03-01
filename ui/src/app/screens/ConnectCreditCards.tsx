@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { InputField } from "../components/InputField";
 import { Check, CreditCard, Info } from "lucide-react";
 import { Slider } from "../components/ui/slider";
+import VirtualCardDisplay from "../components/VirtualCardDisplay";
 
 interface CreditCardProvider {
   id: string;
@@ -79,6 +80,10 @@ export default function ConnectCreditCards() {
       <p className="mt-2 text-sm text-secondary leading-relaxed">
         Open Banking reads your balance and cashback rates. Card details let us route payments through them — charging as normal purchases, not cash advances.
       </p>
+
+      <div className="mt-6 mb-6">
+        <VirtualCardDisplay />
+      </div>
 
       {/* Section 1: Open Banking */}
       <div className="mt-6">
