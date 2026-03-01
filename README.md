@@ -22,7 +22,7 @@ cd ..
 - Run backend (serves built frontend if `ui/dist` exists):
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 Development options

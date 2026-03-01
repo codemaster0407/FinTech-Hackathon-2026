@@ -3,10 +3,12 @@ import json
 import time
 from api.models import Sector
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:8001"
+
 
 def print_separator():
     print("-" * 60)
+
 
 def run_test(name, amount, category):
     print(f"\n[USE CASE]: {name}")
@@ -16,19 +18,21 @@ def run_test(name, amount, category):
         "category": category
     }
     try:
-        response = requests.post(f"{BASE_URL}/optimize-transaction", json=payload)
+        response = requests.post(
+            f"{BASE_URL}/optimize-transaction", json=payload)
         result = response.json()
-        
+
         print(f"Status   : {result['status']}")
         print("Allocations:")
         for a in result['allocations']:
             sector_info = f" ({a['cashback_sector']})" if a['cashback_sector'] else ""
             print(f"  - {a['card_name']:<25}: £{a['amount_utilised']:>8.2f} | Points: {a['cashback_points']:>6.2f}{sector_info:<10} | Int. Impact: £{a['interest_saved']:>8.4f}")
-        
+
         print(f"Explanation: {result['explanation']}")
     except Exception as e:
         print(f"Error connecting to server: {e}")
     print_separator()
+
 
 def update_card_limit(card_id, new_limit):
     print(f"\n[ACTION]: Updating Card {card_id} limit to £{new_limit}...")
@@ -36,15 +40,20 @@ def update_card_limit(card_id, new_limit):
     requests.post(f"{BASE_URL}/cards/update-limit", json=payload)
 
 # Correcting the function for preferences
+
+
 def set_user_preferences(priorities):
     print(f"\n[ACTION]: Updating User Priorities to {priorities}...")
     payload = {"point_priority": priorities}
     requests.post(f"{BASE_URL}/user/update-preferences", json=payload)
 
+
 def reset_environment():
     print("\n[SETUP]: Resetting environment for clean demo...")
-    update_card_limit("cc_1", 1000.0) # Amex Gold Limit
-    set_user_preferences([Sector.HOTEL, Sector.TRAVEL, Sector.SHOPPING, Sector.FUEL, Sector.GROCERY, Sector.GENERAL])
+    update_card_limit("cc_1", 1000.0)  # Amex Gold Limit
+    set_user_preferences([Sector.HOTEL, Sector.TRAVEL, Sector.SHOPPING,
+                         Sector.FUEL, Sector.GROCERY, Sector.GENERAL])
+
 
 if __name__ == "__main__":
     print("=" * 60)
@@ -57,7 +66,7 @@ if __name__ == "__main__":
     run_test("Pass-through (Small Amount)", 20, "grocery")
 
     # 2. Automatic Mode: Balanced (High Reward Sector)
-    # Picks Amex Gold (3% Hotel) or Capital One (8% Hotel!) 
+    # Picks Amex Gold (3% Hotel) or Capital One (8% Hotel!)
     run_test("Auto-Mode: Balanced (Hotel)", 100, "hotel")
 
     # 3. Automatic Mode: Interest Only (General Sector)
@@ -81,7 +90,8 @@ if __name__ == "__main__":
     # We show how it optimizes, then we change a limit, and it re-optimizes
     print("\n--- DYNAMIC LIMIT TEST ---")
     run_test("Pre-Limit Change", 500, "hotel")
-    update_card_limit("cc_3", 50) # Slash the limit of the best hotel card (Capital One)
+    # Slash the limit of the best hotel card (Capital One)
+    update_card_limit("cc_3", 50)
     run_test("Post-Limit Change (Re-routed to next best)", 500, "hotel")
 
     # 8. Dynamic Preference Redirection
@@ -89,7 +99,8 @@ if __name__ == "__main__":
     print("\n--- DYNAMIC PREFERENCE TEST ---")
     run_test("Default Preference", 1000, "grocery")
     # Shift grocery to bottom
-    set_user_preferences([Sector.SHOPPING, Sector.HOTEL, Sector.TRAVEL, Sector.FUEL, Sector.GROCERY, Sector.GENERAL])
+    set_user_preferences([Sector.SHOPPING, Sector.HOTEL,
+                         Sector.TRAVEL, Sector.FUEL, Sector.GROCERY, Sector.GENERAL])
     run_test("Updated Preference", 1000, "grocery")
 
     print("\n" + "=" * 60)

@@ -1,22 +1,27 @@
 import requests
 import json
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:8001"
+
 
 def get_optimization(amount, category):
     payload = {"amount": amount, "category": category}
     response = requests.post(f"{BASE_URL}/optimize-transaction", json=payload)
     return response.json()
 
+
 def update_limit(card_id, new_limit):
     payload = {"card_id": card_id, "new_limit": new_limit}
     requests.post(f"{BASE_URL}/cards/update-limit", json=payload)
 
+
 def print_result(result):
     print(f"Status: {result['status']}")
     for a in result['allocations']:
-        print(f"  - {a['card_name']}: £{a['amount_utilised']:.2f} (Points: {a['cashback_points']:.2f})")
+        print(
+            f"  - {a['card_name']}: £{a['amount_utilised']:.2f} (Points: {a['cashback_points']:.2f})")
     print(f"Explanation: {result['explanation']}\n")
+
 
 if __name__ == "__main__":
     try:

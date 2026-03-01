@@ -20,53 +20,65 @@ class CardOptimizer:
         return amount * rate
 
     def _get_llm_explanation(self, allocations: List[Allocation], total_amount: float, category: Sector, mode: str):
+        print(allocations)
         # Construct a detailed prompt for Groq
-        if mode == "interest_only":
-            prompt = f"Explain this transaction optimization for a purchase of £{total_amount:.2f}.\n"
-        else:
-            prompt = f"Explain this credit card optimization for a {category} purchase of £{total_amount:.2f}.\n"
+        # if mode == "interest_only":
+        #     prompt = f"Explain this transaction optimization for a purchase of £{total_amount:.2f}.\n"
+        # else:
+        #     prompt = f"Explain this credit card optimization for a {category} purchase of £{total_amount:.2f}.\n"
 
-        prompt += "The following allocations were made:\n"
-        for a in allocations:
-            prompt += f"- {a.card_name}: Utilized £{a.amount_utilised:.2f}. "
-            if mode != "interest_only":
-                if a.cashback_points > 0:
-                    prompt += f"Earned {a.cashback_points:.2f} points in {a.cashback_sector}. "
-            if a.interest_saved != 0:
-                prompt += f"Interest impact: £{a.interest_saved:.4f}. "
-            prompt += "\n"
+        # prompt += "The following allocations were made:\n"
+        # for a in allocations:
+        #     prompt += f"- {a.card_name}: Utilized £{a.amount_utilised:.2f}. "
+        #     if mode != "interest_only":
+        #         if a.cashback_points > 0:
+        #             prompt += f"Earned {a.cashback_points:.2f} points in {a.cashback_sector}. "
+        #     if a.interest_saved != 0:
+        #         prompt += f"Interest impact: £{a.interest_saved:.4f}. "
+        #     prompt += "\n"
 
-        if mode == "interest_only":
-            prompt += """
-            STRICT REQUIREMENT: Please provide a concise, friendly explanation why this is the best strategy. 
-            Focus on 'Interest Preservation': explain that by using credit cards or low-interest accounts, the user keeps their high-yield savings (like the 5% account) untouched to maximize their earnings.
-            Do NOT mention points, rewards, or cashback. Keep it under 3 sentences.
-            """
-        else:
-            prompt += """
-            Please provide a concise, friendly explanation to the user why this is the best strategy 
-            (maximizing points and interest while minimizing fees). Keep it under 3 sentences.
-            """
+        # if mode == "interest_only":
+        #     prompt += """
+        #     STRICT REQUIREMENT: Please provide a concise, friendly explanation why this is the best strategy.
+        #     Focus on 'Interest Preservation': explain that by using credit cards or low-interest accounts, the user keeps their high-yield savings (like the 5% account) untouched to maximize their earnings.
+        #     Do NOT mention points, rewards, or cashback. Keep it under 3 sentences.
+        #     """
+        # else:
+        #     prompt += """
+        #     Please provide a concise, friendly explanation to the user why this is the best strategy
+        #     (maximizing points and interest while minimizing fees). Keep it under 3 sentences.
+        #     """
 
-        # Ask the LLM to return a JSON object with UI hint fields so frontend can render
-        prompt += "\n\nRespond ONLY with a JSON object with the following keys: headline, earn_label, comparison, card_badge, savings_nudge, net_benefit_gbp, total_points_earned, reward_type, user_friendly_summary. Do not include any additional text."
+        # Ask the LLM for a short, friendly explanation based on allocations
+        prompt = f"Based on the allocation outputs, explain to the user in a friendly manner in 3 sentences. {str(allocations)}"
 
         try:
             raw = groq_api_call(prompt)
-            # Attempt to parse JSON
-            import json
-            try:
-                obj = json.loads(raw)
-                # extract a short explanation text as well if present, otherwise empty
-                explanation_text = obj.get(
-                    "user_friendly_summary") or obj.get("headline") or ""
-                return explanation_text, obj
-            except Exception:
-                # If parsing fails, return raw text as explanation and no structured hints
-                return raw.strip(), None
+            raw_str = (raw or "").strip()
         except Exception as e:
-            fallback = f"[Fallback Explanation]: I've optimized your £{total_amount:.2f} {category} purchase to maximize your rewards and interest. Error calling LLM: {str(e)}"
-            return fallback, None
+            raw_str = ""
+
+        # If the LLM returned nothing or a short error marker, generate a deterministic fallback
+        if not raw_str or raw_str.startswith("[LLM") or raw_str.startswith("[LLM error"):
+            # Build a concise summary from allocations
+            parts = []
+            for a in allocations:
+                pts = f"earning {a.cashback_points:.2f} points" if (
+                    a.cashback_points and a.cashback_points > 0) else "no points"
+                parts.append(
+                    f"use {a.card_name} for £{a.amount_utilised:.2f} ({pts})")
+
+            if parts:
+                summary = ". ".join(parts)
+                # Keep to max 3 short sentences
+                sentences = summary.split(". ")[:3]
+                user_msg = "I recommend: " + ". ".join(sentences) + "."
+            else:
+                user_msg = f"I've optimized your £{total_amount:.2f} {category} purchase to maximise rewards and minimise interest impact."
+
+            return user_msg
+
+        return raw_str
 
     def _is_split_worthwhile(self, amount: float, potential_benefit: float) -> bool:
         # Realistic thresholds:
@@ -248,8 +260,9 @@ class CardOptimizer:
                     remaining_amount -= use_amount
 
         status = "success" if remaining_amount == 0 else "insufficient_funds"
-        explanation_text, ui_hints = self._get_llm_explanation(
+        explanation_text = self._get_llm_explanation(
             allocations, amount, category, mode)
+        ui_hints = None
 
         # Basic eom_impact calculation for frontend
         total_cashback = sum((a.cashback_points or 0) for a in allocations)
