@@ -67,8 +67,7 @@ class TransactionResponse(BaseModel):
     explanation: Optional[str] = None
     total_amount: float
     status: str = "success"
-    ui_hints: Optional[Dict[str, object]] = None
-    user_friendly_summary: Optional[str] = None
+
 
 
 class UpdateLimitRequest(BaseModel):

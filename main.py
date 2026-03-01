@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
@@ -90,10 +90,10 @@ async def root():
     index_path = dist_dir / "index.html"
     if index_path.exists():
         return HTMLResponse(index_path.read_text(encoding="utf-8"))
-    return {"message": "Card Optimization POC API is running. Build the frontend in `ui/` and place it in `ui/dist` to serve."}
+    return JSONResponse({"message": "Card Optimization POC API is running. Build the frontend in `ui/` and place it in `ui/dist` to serve."})
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

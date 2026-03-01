@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import os 
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-client = Groq(api_key = GROQ_API_KEY)
+GROQ_KEY = os.getenv("GROQ_KEY")
+client = Groq(api_key = GROQ_KEY)
 
 def groq_api_call(prompt):
     completion = client.chat.completions.create(
