@@ -102,7 +102,6 @@ export default function Home() {
           </div>
           <div>
             <span className="text-base font-semibold text-white">Hi, Amanda</span>
-            <span className="text-xs text-secondary block mt-0.5">Ready to optimize?</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
