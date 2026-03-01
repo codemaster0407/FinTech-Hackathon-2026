@@ -1,39 +1,6 @@
-import { useState, useEffect } from "react";
-import { Home as HomeIcon, CreditCard, BarChart3, User, Zap, ChevronDown, ChevronRight, ArrowRight, Info, CheckCircle } from "lucide-react";
-import { Link } from "react-router";
-
-function BottomNav({ active }: { active: string }) {
-  const tabs = [
-    { id: "home", label: "Home", icon: HomeIcon, path: "/home" },
-    { id: "card", label: "Card", icon: CreditCard, path: "/card" },
-    { id: "simulator", label: "Simulator", icon: Zap, path: "/simulator" },
-    { id: "insights", label: "Insights", icon: BarChart3, path: "/insights" },
-    { id: "account", label: "Account", icon: User, path: "/accounts" }
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-sm border-t border-optivault h-[68px] z-50">
-      <div className="mobile-container h-full flex items-center justify-around">
-        {tabs.map(tab => {
-          const Icon = tab.icon;
-          const isActive = active === tab.id;
-          return (
-            <Link
-              key={tab.id}
-              to={tab.path}
-              className="flex flex-col items-center justify-center gap-1 flex-1 h-full"
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-optivault-emerald' : 'text-[#5B6B82]'}`} />
-              <span className={`text-[10px] ${isActive ? 'text-optivault-emerald font-semibold' : 'text-[#5B6B82]'}`}>
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+import { useState } from "react";
+import { Zap, ChevronDown, ChevronRight, ArrowRight, Info, CheckCircle } from "lucide-react";
+import { BottomNav } from "./Home";
 
 interface OptimizationResult {
   user_id: string;
@@ -309,65 +276,7 @@ export default function Simulator() {
     }, 1200);
   };
 
-  // fetch total balances on mount (optional display / debugging)
-  const [totalBalance, setTotalBalance] = useState<{ total_debit_balance: number; total_credit_balance: number; total_gbp_balance: number } | null>(null);
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/cards/total-balance");
-        if (!mounted) return;
-        if (res.ok) {
-          const j = await res.json();
-          setTotalBalance(j);
-        }
-      } catch (e) {
-        // ignore
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
 
-  // Admin actions state (simple controls to call backend endpoints)
-  const [showAdmin, setShowAdmin] = useState<boolean>(false);
-  const [cardIdLimit, setCardIdLimit] = useState<string>("");
-  const [newLimit, setNewLimit] = useState<string>("");
-  const [limitStatus, setLimitStatus] = useState<string | null>(null);
-
-  const [prefs, setPrefs] = useState<string[]>([]);
-  const [prefsStatus, setPrefsStatus] = useState<string | null>(null);
-
-  const updateLimit = async () => {
-    if (!cardIdLimit || !newLimit) return setLimitStatus("Provide card id and new limit");
-    setLimitStatus("Updating...");
-    try {
-      const res = await fetch('/api/cards/update-limit', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ card_id: cardIdLimit, new_limit: parseFloat(newLimit) })
-      });
-      const j = await res.json();
-      if (res.ok) setLimitStatus(`Success: ${j.message || 'updated'}`);
-      else setLimitStatus(`Error: ${j.detail || JSON.stringify(j)}`);
-    } catch (e) {
-      setLimitStatus('Network error');
-    }
-  };
-
-  const updatePreferences = async () => {
-    if (!prefs.length) return setPrefsStatus('Select at least one sector');
-    setPrefsStatus('Updating...');
-    try {
-      const res = await fetch('/api/user/update-preferences', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ point_priority: prefs })
-      });
-      const j = await res.json();
-      if (res.ok) setPrefsStatus(j.message || 'Preferences updated');
-      else setPrefsStatus(`Error: ${j.detail || JSON.stringify(j)}`);
-    } catch (e) {
-      setPrefsStatus('Network error');
-    }
-  };
 
   const loadDemoScenario = (scenario: typeof demoScenarios[0]) => {
     setAmount(scenario.amount);
@@ -385,18 +294,9 @@ export default function Simulator() {
     <div className="mobile-container min-h-screen bg-optivault-navy pb-24 overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-optivault-navy/95 backdrop-blur-sm px-6 py-6 border-b border-optivault">
-        <div>
+        <div className="text-center">
           <h1 className="text-2xl font-semibold text-primary">Payment Simulator</h1>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-secondary mt-1">See how we optimize your transaction in real time</p>
-            {totalBalance && (
-              <div className="ml-2 px-3 py-1 rounded-full bg-surface-alt border border-optivault text-[12px] text-primary">
-                <span className="font-semibold">Balances:</span>
-                <span className="ml-2 text-xs">D £{totalBalance.total_debit_balance.toFixed(0)}</span>
-                <span className="ml-2 text-xs">C £{totalBalance.total_credit_balance.toFixed(0)}</span>
-              </div>
-            )}
-          </div>
+          <p className="text-sm text-secondary mt-1">See how we optimize your transaction in real time</p>
         </div>
       </div>
 
@@ -483,46 +383,6 @@ export default function Simulator() {
             )}
           </button>
 
-          {/* Admin Actions: update limit & preferences */}
-          <div className="mt-4">
-            <button
-              onClick={() => setShowAdmin(!showAdmin)}
-              className="text-xs text-secondary underline"
-            >
-              {showAdmin ? 'Hide' : 'Show'} admin actions
-            </button>
-
-            {showAdmin && (
-              <div className="mt-3 space-y-3 bg-surface-alt p-3 rounded-lg border border-optivault">
-                <div>
-                  <label className="text-[11px] text-secondary">Card ID</label>
-                  <input value={cardIdLimit} onChange={e => setCardIdLimit(e.target.value)} placeholder="card id (e.g. amex_amanda)" className="w-full mt-1 px-3 py-2 rounded-md bg-white/5 text-sm" />
-                  <label className="text-[11px] text-secondary mt-2 block">New Limit</label>
-                  <input value={newLimit} onChange={e => setNewLimit(e.target.value)} placeholder="new limit (e.g. 5000)" type="number" className="w-full mt-1 px-3 py-2 rounded-md bg-white/5 text-sm" />
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={updateLimit} className="px-3 py-2 bg-[#0080FF] text-white rounded-md text-sm">Update Limit</button>
-                    <div className="text-sm text-secondary self-center">{limitStatus}</div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-secondary">User Preferences (point priority)</label>
-                  <div className="flex gap-2 flex-wrap mt-2">
-                    {['travel', 'grocery', 'fuel', 'hotel', 'shopping', 'general'].map(s => (
-                      <button key={s} onClick={() => setPrefs(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
-                        className={`px-3 py-1 rounded-full text-xs ${prefs.includes(s) ? 'bg-optivault-emerald text-black' : 'bg-surface border border-optivault text-secondary'}`}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={updatePreferences} className="px-3 py-2 bg-[#0080FF] text-white rounded-md text-sm">Update Preferences</button>
-                    <div className="text-sm text-secondary self-center">{prefsStatus}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Optimization Result */}
@@ -591,6 +451,7 @@ export default function Simulator() {
               (result as any).amount_gbp = totalGbp;
               (result as any).eom_impact = eom;
               (result as any).ui_hints = uiHints;
+              return null;
             })()}
 
             {/* Allocation Visualization */}
