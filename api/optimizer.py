@@ -3,9 +3,11 @@ from api.models import DebitCard, CreditCard, InternationalCard, UserPreferences
 import math
 from llm.groq_api import groq_api_call
 
+
 class CardOptimizer:
     def __init__(self, debit_cards: List[DebitCard], credit_cards: List[CreditCard], international_cards: List[InternationalCard], preferences: UserPreferences):
-        self.debit_cards = sorted(debit_cards, key=lambda x: x.annual_interest_rate, reverse=True)
+        self.debit_cards = sorted(
+            debit_cards, key=lambda x: x.annual_interest_rate, reverse=True)
         self.credit_cards = credit_cards
         self.international_cards = international_cards
         self.preferences = preferences
@@ -17,13 +19,13 @@ class CardOptimizer:
     def _calculate_cashback_benefit(self, amount: float, rate: float) -> float:
         return amount * rate
 
-    def _get_llm_explanation(self, allocations: List[Allocation], total_amount: float, category: Sector, mode: str) -> str:
+    def _get_llm_explanation(self, allocations: List[Allocation], total_amount: float, category: Sector, mode: str):
         # Construct a detailed prompt for Groq
         if mode == "interest_only":
             prompt = f"Explain this transaction optimization for a purchase of £{total_amount:.2f}.\n"
         else:
             prompt = f"Explain this credit card optimization for a {category} purchase of £{total_amount:.2f}.\n"
-        
+
         prompt += "The following allocations were made:\n"
         for a in allocations:
             prompt += f"- {a.card_name}: Utilized £{a.amount_utilised:.2f}. "
@@ -33,7 +35,7 @@ class CardOptimizer:
             if a.interest_saved != 0:
                 prompt += f"Interest impact: £{a.interest_saved:.4f}. "
             prompt += "\n"
-        
+
         if mode == "interest_only":
             prompt += """
             STRICT REQUIREMENT: Please provide a concise, friendly explanation why this is the best strategy. 
@@ -45,12 +47,26 @@ class CardOptimizer:
             Please provide a concise, friendly explanation to the user why this is the best strategy 
             (maximizing points and interest while minimizing fees). Keep it under 3 sentences.
             """
-        
+
+        # Ask the LLM to return a JSON object with UI hint fields so frontend can render
+        prompt += "\n\nRespond ONLY with a JSON object with the following keys: headline, earn_label, comparison, card_badge, savings_nudge, net_benefit_gbp, total_points_earned, reward_type, user_friendly_summary. Do not include any additional text."
+
         try:
-            explanation = groq_api_call(prompt)
-            return explanation.strip()
+            raw = groq_api_call(prompt)
+            # Attempt to parse JSON
+            import json
+            try:
+                obj = json.loads(raw)
+                # extract a short explanation text as well if present, otherwise empty
+                explanation_text = obj.get(
+                    "user_friendly_summary") or obj.get("headline") or ""
+                return explanation_text, obj
+            except Exception:
+                # If parsing fails, return raw text as explanation and no structured hints
+                return raw.strip(), None
         except Exception as e:
-            return f"[Fallback Explanation]: I've optimized your £{total_amount:.2f} {category} purchase to maximize your rewards and interest. Error calling LLM: {str(e)}"
+            fallback = f"[Fallback Explanation]: I've optimized your £{total_amount:.2f} {category} purchase to maximize your rewards and interest. Error calling LLM: {str(e)}"
+            return fallback, None
 
     def _is_split_worthwhile(self, amount: float, potential_benefit: float) -> bool:
         # Realistic thresholds:
@@ -58,7 +74,7 @@ class CardOptimizer:
         # 2. Don't split if the net benefit (cashback + interest saved) is < £0.10
         MIN_SPLIT_TRANSACTION = 50.0
         MIN_BENEFIT_THRESHOLD = 0.10
-        
+
         if amount < MIN_SPLIT_TRANSACTION:
             return False
         if potential_benefit < MIN_BENEFIT_THRESHOLD:
@@ -68,7 +84,7 @@ class CardOptimizer:
     def optimize(self, request: TransactionRequest) -> TransactionResponse:
         amount = request.amount
         category = request.category
-        
+
         # Automatic Mode Selection based on Category
         # Balanced: hotel, travel, fuel, shopping
         # Interest Only: everything else (general, grocery)
@@ -83,34 +99,35 @@ class CardOptimizer:
         # Define the cost/benefit for each card type
         # Benefit = (Cashback Rate) - (Opportunity Cost of Interest Loss)
         # We want to maximize this Benefit across all utilized sources.
-        
+
         indexed_cards = []
-        
+
         # Best debit rate to calculate "Interest Saved" comparison
-        best_debit_rate = max([dc.annual_interest_rate for dc in self.debit_cards] + [0])
+        best_debit_rate = max(
+            [dc.annual_interest_rate for dc in self.debit_cards] + [0])
 
         for cc in self.credit_cards:
             rate = cc.cashback_rates.get(category, 0)
-            
+
             # Calculate a tiny priority bonus (0 to 0.0001) based on sector priority
             priority_bonus = 0.0
             if category in self.preferences.point_priority:
                 rank = self.preferences.point_priority.index(category)
                 priority_bonus = (len(Sector) - rank) * 0.00001
-            
+
             if mode == "interest_only":
                 # Skip credit cards in interest_only mode to prioritize debit cards only.
                 continue
             else:
                 final_benefit = rate + priority_bonus
-            
+
             indexed_cards.append({
                 "obj": cc,
                 "benefit": final_benefit,
                 "type": "credit",
                 "available_gbp": min(cc.monthly_spend_limit, cc.current_balance)
             })
-            
+
         for dc in self.debit_cards:
             indexed_cards.append({
                 "obj": dc,
@@ -118,12 +135,13 @@ class CardOptimizer:
                 "type": "debit",
                 "available_gbp": min(dc.monthly_spend_limit, dc.current_balance)
             })
-            
+
         for ic in self.international_cards:
             # International balance/limit is in local currency (e.g. INR)
             # Convert to GBP equivalent for optimization logic
-            available_gbp = min(ic.monthly_spend_limit, ic.current_balance) / ic.gbp_conversion
-            
+            available_gbp = min(ic.monthly_spend_limit,
+                                ic.current_balance) / ic.gbp_conversion
+
             indexed_cards.append({
                 "obj": ic,
                 "benefit": -ic.markup_rate,
@@ -132,7 +150,8 @@ class CardOptimizer:
             })
 
         # Sort all sources by benefit (highest first)
-        ranked_cards = sorted(indexed_cards, key=lambda x: x["benefit"], reverse=True)
+        ranked_cards = sorted(
+            indexed_cards, key=lambda x: x["benefit"], reverse=True)
 
         # Pre-calculate potential best single card that covers the whole amount,
         # respecting mode-specific preferences.
@@ -154,11 +173,11 @@ class CardOptimizer:
         # Decision: To split or not to split?
         # We only consider splitting if the best single card is NOT the absolute best benefit card,
         # OR if no single card can cover the amount.
-        
+
         should_split = True
         if amount < 50.0:
             should_split = False
-        
+
         if not should_split and best_single_card:
             # Fallback to single best card
             card = best_single_card["obj"]
@@ -168,11 +187,15 @@ class CardOptimizer:
                 rate = card.cashback_rates.get(category, 0)
                 cashback = self._calculate_cashback_benefit(amount, rate)
                 # Show the interest preserved in the bank by not spending this amount from high-yield debit
-                interest_saved = self._calculate_interest_benefit(amount, best_debit_rate)
+                interest_saved = self._calculate_interest_benefit(
+                    amount, best_debit_rate)
             elif best_single_card["type"] == "debit":
-                interest_saved = -self._calculate_interest_benefit(amount, card.annual_interest_rate)
+                interest_saved = - \
+                    self._calculate_interest_benefit(
+                        amount, card.annual_interest_rate)
             else:
-                interest_saved = -self._calculate_interest_benefit(amount, card.markup_rate)
+                interest_saved = - \
+                    self._calculate_interest_benefit(amount, card.markup_rate)
 
             allocations.append(Allocation(
                 card_id=card.id,
@@ -188,25 +211,31 @@ class CardOptimizer:
             for item in ranked_cards:
                 if remaining_amount <= 0:
                     break
-                
+
                 card = item["obj"]
                 available = item["available_gbp"]
-                
+
                 if available > 0:
                     use_amount = min(remaining_amount, available)
-                    
+
                     cashback = 0.0
                     interest_saved = 0.0
-                    
+
                     if item["type"] == "credit":
                         rate = card.cashback_rates.get(category, 0)
-                        cashback = self._calculate_cashback_benefit(use_amount, rate)
+                        cashback = self._calculate_cashback_benefit(
+                            use_amount, rate)
                         # Show the interest preserved in the bank
-                        interest_saved = self._calculate_interest_benefit(use_amount, best_debit_rate)
+                        interest_saved = self._calculate_interest_benefit(
+                            use_amount, best_debit_rate)
                     elif item["type"] == "debit":
-                        interest_saved = -self._calculate_interest_benefit(use_amount, card.annual_interest_rate)
-                    else: # international
-                        interest_saved = -self._calculate_interest_benefit(use_amount, card.markup_rate)
+                        interest_saved = - \
+                            self._calculate_interest_benefit(
+                                use_amount, card.annual_interest_rate)
+                    else:  # international
+                        interest_saved = - \
+                            self._calculate_interest_benefit(
+                                use_amount, card.markup_rate)
 
                     allocations.append(Allocation(
                         card_id=card.id,
@@ -219,11 +248,37 @@ class CardOptimizer:
                     remaining_amount -= use_amount
 
         status = "success" if remaining_amount == 0 else "insufficient_funds"
-        explanation = self._get_llm_explanation(allocations, amount, category, mode)
+        explanation_text, ui_hints = self._get_llm_explanation(
+            allocations, amount, category, mode)
 
-        return TransactionResponse(
+        # Basic eom_impact calculation for frontend
+        total_cashback = sum((a.cashback_points or 0) for a in allocations)
+        total_interest_loss = sum((a.interest_saved or 0) for a in allocations)
+        total_fx = 0
+
+        eom_impact = {
+            "total_cashback_earned": total_cashback,
+            "total_interest_opportunity_lost": total_interest_loss,
+            "total_fx_costs": total_fx,
+            "net_eom_benefit": total_cashback - total_interest_loss - total_fx,
+        }
+
+        # include a short user-friendly summary if LLM returned structured hints
+        user_summary = None
+        if ui_hints and isinstance(ui_hints, dict):
+            user_summary = ui_hints.get("user_friendly_summary")
+
+        resp = TransactionResponse(
             allocations=allocations,
-            explanation=explanation,
+            explanation=explanation_text,
             total_amount=amount,
-            status=status
+            status=status,
+            ui_hints=ui_hints,
+            user_friendly_summary=user_summary
         )
+        # Attach eom_impact to ui_hints for frontend convenience
+        if resp.ui_hints is None:
+            resp.ui_hints = {}
+        resp.ui_hints["eom_impact"] = eom_impact
+
+        return resp

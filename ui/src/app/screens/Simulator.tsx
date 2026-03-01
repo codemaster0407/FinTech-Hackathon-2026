@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Home as HomeIcon, CreditCard, BarChart3, User, Zap, ChevronDown, ChevronRight, ArrowRight, Info, CheckCircle } from "lucide-react";
 import { Link } from "react-router";
 
@@ -131,18 +131,22 @@ export default function Simulator() {
     const amountNum = parseFloat(amount);
     const isInternational = currency !== "GBP";
 
+    // map UI category to backend Sector enum where needed
+    const categoryMap: Record<string, string> = {
+      travel: "travel",
+      groceries: "grocery",
+      fuel: "fuel",
+      hotel: "hotel",
+    };
+
     const payload = {
-      user_id: "usr_001",
       amount: amountNum,
-      currency: currency,
-      category: category,
-      merchant: "HMRC Tax",
-      is_international: isInternational
+      category: (categoryMap[category] || category) as any,
     };
 
     try {
-      // Attempt to hit the actual teammate backend
-      const response = await fetch("http://localhost:8000/api/optimize", {
+      // call backend API (relative path so it works when served from same origin)
+      const response = await fetch("/api/optimize-transaction", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -297,6 +301,66 @@ export default function Simulator() {
     }, 1200);
   };
 
+  // fetch total balances on mount (optional display / debugging)
+  const [totalBalance, setTotalBalance] = useState<{ total_debit_balance: number; total_credit_balance: number; total_gbp_balance: number } | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/cards/total-balance");
+        if (!mounted) return;
+        if (res.ok) {
+          const j = await res.json();
+          setTotalBalance(j);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // Admin actions state (simple controls to call backend endpoints)
+  const [showAdmin, setShowAdmin] = useState<boolean>(false);
+  const [cardIdLimit, setCardIdLimit] = useState<string>("");
+  const [newLimit, setNewLimit] = useState<string>("");
+  const [limitStatus, setLimitStatus] = useState<string | null>(null);
+
+  const [prefs, setPrefs] = useState<string[]>([]);
+  const [prefsStatus, setPrefsStatus] = useState<string | null>(null);
+
+  const updateLimit = async () => {
+    if (!cardIdLimit || !newLimit) return setLimitStatus("Provide card id and new limit");
+    setLimitStatus("Updating...");
+    try {
+      const res = await fetch('/api/cards/update-limit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ card_id: cardIdLimit, new_limit: parseFloat(newLimit) })
+      });
+      const j = await res.json();
+      if (res.ok) setLimitStatus(`Success: ${j.message || 'updated'}`);
+      else setLimitStatus(`Error: ${j.detail || JSON.stringify(j)}`);
+    } catch (e) {
+      setLimitStatus('Network error');
+    }
+  };
+
+  const updatePreferences = async () => {
+    if (!prefs.length) return setPrefsStatus('Select at least one sector');
+    setPrefsStatus('Updating...');
+    try {
+      const res = await fetch('/api/user/update-preferences', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ point_priority: prefs })
+      });
+      const j = await res.json();
+      if (res.ok) setPrefsStatus(j.message || 'Preferences updated');
+      else setPrefsStatus(`Error: ${j.detail || JSON.stringify(j)}`);
+    } catch (e) {
+      setPrefsStatus('Network error');
+    }
+  };
+
   const loadDemoScenario = (scenario: typeof demoScenarios[0]) => {
     setAmount(scenario.amount);
     setCurrency(scenario.currency);
@@ -315,7 +379,16 @@ export default function Simulator() {
       <div className="sticky top-0 z-40 bg-optivault-navy/95 backdrop-blur-sm px-6 py-6 border-b border-optivault">
         <div>
           <h1 className="text-2xl font-semibold text-primary">Payment Simulator</h1>
-          <p className="text-sm text-secondary mt-1">See how we optimize your transaction in real time</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-secondary mt-1">See how we optimize your transaction in real time</p>
+            {totalBalance && (
+              <div className="ml-2 px-3 py-1 rounded-full bg-surface-alt border border-optivault text-[12px] text-primary">
+                <span className="font-semibold">Balances:</span>
+                <span className="ml-2 text-xs">D £{totalBalance.total_debit_balance.toFixed(0)}</span>
+                <span className="ml-2 text-xs">C £{totalBalance.total_credit_balance.toFixed(0)}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -401,11 +474,113 @@ export default function Simulator() {
               </>
             )}
           </button>
+
+          {/* Admin Actions: update limit & preferences */}
+          <div className="mt-4">
+            <button
+              onClick={() => setShowAdmin(!showAdmin)}
+              className="text-xs text-secondary underline"
+            >
+              {showAdmin ? 'Hide' : 'Show'} admin actions
+            </button>
+
+            {showAdmin && (
+              <div className="mt-3 space-y-3 bg-surface-alt p-3 rounded-lg border border-optivault">
+                <div>
+                  <label className="text-[11px] text-secondary">Card ID</label>
+                  <input value={cardIdLimit} onChange={e => setCardIdLimit(e.target.value)} placeholder="card id (e.g. amex_amanda)" className="w-full mt-1 px-3 py-2 rounded-md bg-white/5 text-sm" />
+                  <label className="text-[11px] text-secondary mt-2 block">New Limit</label>
+                  <input value={newLimit} onChange={e => setNewLimit(e.target.value)} placeholder="new limit (e.g. 5000)" type="number" className="w-full mt-1 px-3 py-2 rounded-md bg-white/5 text-sm" />
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={updateLimit} className="px-3 py-2 bg-[#0080FF] text-white rounded-md text-sm">Update Limit</button>
+                    <div className="text-sm text-secondary self-center">{limitStatus}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-secondary">User Preferences (point priority)</label>
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {['travel', 'grocery', 'fuel', 'hotel', 'shopping', 'general'].map(s => (
+                      <button key={s} onClick={() => setPrefs(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                        className={`px-3 py-1 rounded-full text-xs ${prefs.includes(s) ? 'bg-optivault-emerald text-black' : 'bg-surface border border-optivault text-secondary'}`}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={updatePreferences} className="px-3 py-2 bg-[#0080FF] text-white rounded-md text-sm">Update Preferences</button>
+                    <div className="text-sm text-secondary self-center">{prefsStatus}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Optimization Result */}
         {result && (
           <div className="space-y-4 animate-fadeIn">
+            {(() => {
+              // Normalize backend response shape (it returns `allocations`) to the UI shape (`allocation`)
+              const allocs = (result as any).allocation ?? (result as any).allocations ?? [];
+              // total amount in GBP
+              const totalGbp = (result as any).amount_gbp ?? (result as any).total_amount ?? allocs.reduce((s: number, a: any) => s + (a.amount_gbp ?? a.amount_utilised ?? 0), 0);
+
+              // create a safe eom_impact object (we'll compute below)
+              const existingEom = (result as any).eom_impact ?? null;
+
+              // Ensure each allocation has numeric fields the UI expects and normalize names
+              allocs.forEach((a: any) => {
+                // amount_gbp may be provided or under amount_utilised
+                a.amount_gbp = a.amount_gbp ?? a.amount_utilised ?? 0;
+
+                // Normalize cashback value
+                a.cashback_earned = a.cashback_earned ?? a.cashback_points ?? 0;
+                // Normalize interest: backend may provide `interest_saved` (could be negative to indicate loss)
+                // Convert to `interest_opportunity_lost` positive value for the UI when appropriate
+                if (a.interest_opportunity_lost == null) {
+                  const raw = a.interest_saved ?? 0;
+                  a.interest_opportunity_lost = raw < 0 ? Math.abs(raw) : 0;
+                }
+
+                a.fx_cost = a.fx_cost ?? 0;
+
+                // Compute a best-effort net_benefit if missing (cashback - interest_loss - fx)
+                a.net_benefit = a.net_benefit ?? ((a.cashback_earned || 0) - (a.interest_opportunity_lost || 0) - (a.fx_cost || 0));
+              });
+
+              // Compute aggregated eom_impact from allocations unless backend supplied one
+              const total_cashback = allocs.reduce((s: number, a: any) => s + (a.cashback_earned || 0), 0);
+              const total_interest_loss = allocs.reduce((s: number, a: any) => s + (a.interest_opportunity_lost || 0), 0);
+              const total_fx = allocs.reduce((s: number, a: any) => s + (a.fx_cost || 0), 0);
+              const computedEom = {
+                total_cashback_earned: total_cashback,
+                total_interest_opportunity_lost: total_interest_loss,
+                total_fx_costs: total_fx,
+                net_eom_benefit: total_cashback - total_interest_loss - total_fx,
+              };
+
+              const eom = existingEom ?? computedEom;
+
+              // Ensure UI hints exist and populate friendly defaults from explanation when missing
+              const uiHints = (result as any).ui_hints ?? {};
+              if (!uiHints.headline) uiHints.headline = computedEom.net_eom_benefit >= 0 ? 'Optimized for Rewards and Interest' : 'Optimized for Interest Preservation';
+              if (!uiHints.earn_label) uiHints.earn_label = 'Estimated benefit';
+              if (!uiHints.savings_nudge) uiHints.savings_nudge = '';
+              uiHints.net_benefit_gbp = uiHints.net_benefit_gbp ?? eom.net_eom_benefit;
+              uiHints.total_points_earned = uiHints.total_points_earned ?? Math.round(total_cashback * 10);
+              uiHints.reward_type = uiHints.reward_type ?? (total_cashback > 0 ? 'cashback' : 'interest_preservation');
+
+              // Ensure user_friendly_summary exists
+              (result as any).user_friendly_summary = (result as any).user_friendly_summary ?? (result as any).explanation ?? '';
+
+              // expose normalized values back into the result for the render below
+              (result as any).allocation = allocs;
+              (result as any).amount_gbp = totalGbp;
+              (result as any).eom_impact = eom;
+              (result as any).ui_hints = uiHints;
+            })()}
+
             {/* Allocation Visualization */}
             <div>
               <p className="text-xs text-secondary mb-2 px-1">Payment Allocation</p>
@@ -493,24 +668,24 @@ export default function Simulator() {
                 <div className="px-5 pb-5 border-t border-optivault animate-slideDown pt-4">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-base font-semibold text-primary">{result.ui_hints.headline}</h3>
-                      <p className="text-xs text-secondary mt-0.5">{result.decision_label}</p>
+                      <h3 className="text-base font-semibold text-primary">{(result.ui_hints && (result.ui_hints as any).headline) ?? ''}</h3>
+                      <p className="text-xs text-secondary mt-0.5">{result.decision_label ?? ''}</p>
                     </div>
                     <div className="px-3 py-1 bg-optivault-emerald/10 rounded-full">
-                      <span className="text-xs font-semibold text-optivault-emerald">{result.ui_hints.earn_label}</span>
+                      <span className="text-xs font-semibold text-optivault-emerald">{(result.ui_hints && (result.ui_hints as any).earn_label) ?? ''}</span>
                     </div>
                   </div>
 
                   <div className="text-sm text-secondary leading-relaxed bg-surface-alt p-3 rounded-lg border border-optivault mb-4">
-                    {result.user_friendly_summary.split('\n').map((paragraph, i) => (
+                    {((result.user_friendly_summary ?? '')).split('\n').map((paragraph, i) => (
                       <p key={i} className="mb-2 last:mb-0" dangerouslySetInnerHTML={{ __html: paragraph.replace(/\*(.*?)\*/g, '<span class="text-white font-semibold">$1</span>') }} />
                     ))}
                   </div>
 
-                  {result.ui_hints.savings_nudge && (
+                  {(result.ui_hints && (result.ui_hints as any).savings_nudge) && (
                     <div className="flex items-center gap-2 bg-status-blue-dim p-3 rounded-lg border border-status-blue/30 mt-2">
                       <Info className="w-4 h-4 text-status-blue flex-shrink-0" />
-                      <p className="text-xs text-status-blue">{result.ui_hints.savings_nudge}</p>
+                      <p className="text-xs text-status-blue">{(result.ui_hints as any).savings_nudge}</p>
                     </div>
                   )}
                 </div>
