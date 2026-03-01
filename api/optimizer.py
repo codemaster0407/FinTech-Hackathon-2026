@@ -76,6 +76,10 @@ class CardOptimizer:
             [dc.annual_interest_rate for dc in self.debit_cards] + [0])
 
         for cc in self.credit_cards:
+            if mode == "interest_only":
+                # Only utilise debit cards in interest_only/general mode.
+                continue
+
             rate = cc.cashback_rates.get(category, 0)
 
             # Calculate a tiny priority bonus (0 to 0.0001) based on sector priority
@@ -84,13 +88,7 @@ class CardOptimizer:
                 rank = self.preferences.point_priority.index(category)
                 priority_bonus = (len(Sector) - rank) * 0.00001
 
-            # In interest_only mode, we still use credit cards if available
-            # because they preserve the highest possible interest.
-            # We just set the cashback benefit to 0 (or very low) to focus on interest.
-            if mode == "interest_only":
-                final_benefit = 0.0 + priority_bonus
-            else:
-                final_benefit = rate + priority_bonus
+            final_benefit = rate + priority_bonus
 
             indexed_cards.append({
                 "obj": cc,
@@ -108,6 +106,10 @@ class CardOptimizer:
             })
 
         for ic in self.international_cards:
+            if mode == "interest_only":
+                # Only utilise debit cards in interest_only/general mode.
+                continue
+
             # International balance/limit is in local currency (e.g. INR)
             # Convert to GBP equivalent for optimization logic
             available_gbp = min(ic.monthly_spend_limit,
