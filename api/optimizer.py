@@ -21,52 +21,20 @@ class CardOptimizer:
 
     def _get_llm_explanation(self, allocations: List[Allocation], total_amount: float, category: Sector, mode: str):
         # Construct a detailed prompt for Groq
-        if mode == "interest_only":
-            prompt = f"Explain this transaction optimization for a purchase of £{total_amount:.2f}.\n"
-        else:
-            prompt = f"Explain this credit card optimization for a {category} purchase of £{total_amount:.2f}.\n"
-
-        prompt += "The following allocations were made:\n"
-        for a in allocations:
-            prompt += f"- {a.card_name}: Utilized £{a.amount_utilised:.2f}. "
-            if mode != "interest_only":
-                if a.cashback_points > 0:
-                    prompt += f"Earned {a.cashback_points:.2f} points in {a.cashback_sector}. "
-            if a.interest_saved != 0:
-                prompt += f"Interest impact: £{a.interest_saved:.4f}. "
-            prompt += "\n"
-
-        if mode == "interest_only":
-            prompt += """
-            STRICT REQUIREMENT: Please provide a concise, friendly explanation why this is the best strategy. 
-            Focus on 'Interest Preservation': explain that by using credit cards or low-interest accounts, the user keeps their high-yield savings (like the 5% account) untouched to maximize their earnings.
-            Do NOT mention points, rewards, or cashback. Keep it under 3 sentences.
-            """
-        else:
-            prompt += """
-            Please provide a concise, friendly explanation to the user why this is the best strategy 
-            (maximizing points and interest while minimizing fees). Keep it under 3 sentences.
-            """
-
-        # Ask the LLM to return a JSON object with UI hint fields so frontend can render
-        prompt += "\n\nRespond ONLY with a JSON object with the following keys: headline, earn_label, comparison, card_badge, savings_nudge, net_benefit_gbp, total_points_earned, reward_type, user_friendly_summary. Do not include any additional text."
-
+        prompt = f'''Based on the allocations made by the optimization model, give the user the summary 
+        of the payment allocations and make it user-friendly for a common man.
+        {str(allocations)}. Maximise the explanation to only 3 sentences
+        '''
+        print(allocations)
         try:
             raw = groq_api_call(prompt)
-            # Attempt to parse JSON
-            import json
-            try:
-                obj = json.loads(raw)
-                # extract a short explanation text as well if present, otherwise empty
-                explanation_text = obj.get(
-                    "user_friendly_summary") or obj.get("headline") or ""
-                return explanation_text, obj
-            except Exception:
-                # If parsing fails, return raw text as explanation and no structured hints
-                return raw.strip(), None
+            print(raw)
+            return raw
         except Exception as e:
-            fallback = f"[Fallback Explanation]: I've optimized your £{total_amount:.2f} {category} purchase to maximize your rewards and interest. Error calling LLM: {str(e)}"
-            return fallback, None
+            raise Exception(e)
+
+            # Attempt to parse JSON
+            
 
     def _is_split_worthwhile(self, amount: float, potential_benefit: float) -> bool:
         # Realistic thresholds:
@@ -248,37 +216,17 @@ class CardOptimizer:
                     remaining_amount -= use_amount
 
         status = "success" if remaining_amount == 0 else "insufficient_funds"
-        explanation_text, ui_hints = self._get_llm_explanation(
+        explanation_text = self._get_llm_explanation(
             allocations, amount, category, mode)
 
-        # Basic eom_impact calculation for frontend
-        total_cashback = sum((a.cashback_points or 0) for a in allocations)
-        total_interest_loss = sum((a.interest_saved or 0) for a in allocations)
-        total_fx = 0
 
-        eom_impact = {
-            "total_cashback_earned": total_cashback,
-            "total_interest_opportunity_lost": total_interest_loss,
-            "total_fx_costs": total_fx,
-            "net_eom_benefit": total_cashback - total_interest_loss - total_fx,
-        }
-
-        # include a short user-friendly summary if LLM returned structured hints
-        user_summary = None
-        if ui_hints and isinstance(ui_hints, dict):
-            user_summary = ui_hints.get("user_friendly_summary")
-
+        
         resp = TransactionResponse(
             allocations=allocations,
             explanation=explanation_text,
             total_amount=amount,
-            status=status,
-            ui_hints=ui_hints,
-            user_friendly_summary=user_summary
+            status=status
         )
+        return resp 
         # Attach eom_impact to ui_hints for frontend convenience
-        if resp.ui_hints is None:
-            resp.ui_hints = {}
-        resp.ui_hints["eom_impact"] = eom_impact
-
-        return resp
+      

@@ -114,13 +114,16 @@ export default function Simulator() {
     { value: "travel", label: "Travel" },
     { value: "groceries", label: "Groceries" },
     { value: "fuel", label: "Fuel" },
-    { value: "hotel", label: "Hotel" }
+    { value: "hotel", label: "Hotel" },
+    { value: "shopping", label: "Shopping" },
+    { value: "general", label: "General" }
   ];
 
   const demoScenarios = [
     { name: "Paris Travel", amount: "200", currency: "EUR", category: "travel", international: true },
     { name: "Tesco Groceries", amount: "100", currency: "GBP", category: "groceries", international: false },
-    { name: "Fuel Purchase", amount: "80", currency: "GBP", category: "fuel", international: false }
+    { name: "Fuel Purchase", amount: "80", currency: "GBP", category: "fuel", international: false },
+    { name: "Miscellaneous", amount: "50", currency: "GBP", category: "general", international: false }
   ];
 
   const runOptimization = async () => {
@@ -137,6 +140,8 @@ export default function Simulator() {
       groceries: "grocery",
       fuel: "fuel",
       hotel: "hotel",
+      shopping: "shopping",
+      general: "general",
     };
 
     const payload = {
