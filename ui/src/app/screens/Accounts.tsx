@@ -39,10 +39,10 @@ export default function Accounts() {
   const navigate = useNavigate();
   const accounts = {
     uk: [
-      { bank: "Santander", type: "Current", balance: "£3,820.16", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
-      { bank: "Monzo", type: "Current", balance: "£1,521.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#FF5A5F", logo: "M" },
-      { bank: "Lloyds", type: "Saver", balance: "£4,480.00", vrp: false, badge: "VRP OFF", synced: "5m ago", color: "#006A4D", logo: "L" },
-      { bank: "Barclays", type: "ISA", balance: "£6,420.00", vrp: false, badge: "ISA · VRP OFF", synced: "5m ago", color: "#00AEEF", logo: "B" }
+      { bank: "Santander", type: "Savings", balance: "£3,820.16", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#EC0000", logo: "S", isPrimary: true },
+      { bank: "Monzo", type: "Savings", balance: "£1,521.00", vrp: true, badge: "VRP ON", synced: "2m ago", color: "#FF5A5F", logo: "M" },
+      { bank: "Lloyds", type: "Savings", balance: "£4,480.00", vrp: false, badge: "VRP OFF", synced: "5m ago", color: "#006A4D", logo: "L" },
+      { bank: "Barclays", type: "Savings", balance: "£6,420.00", vrp: false, badge: "ISA · VRP OFF", synced: "5m ago", color: "#00AEEF", logo: "B" }
     ],
     creditCards: [
       { bank: "Amex Gold", type: "Credit", balance: "£3,400 available", linked: true, utilisation: 15, cashback: "4.4% cashback", color: "#002663", logo: "A" },
